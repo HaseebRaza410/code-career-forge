@@ -17,6 +17,13 @@ import Community from "./pages/Community";
 import Portfolio from "./pages/Portfolio";
 import Profile from "./pages/Profile";
 import Premium from "./pages/Premium";
+import Learning from "./pages/Learning";
+import Schedule from "./pages/Schedule";
+import Notes from "./pages/Notes";
+import Resources from "./pages/Resources";
+import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
+import Support from "./pages/Support";
 
 const queryClient = new QueryClient();
 
@@ -33,11 +40,19 @@ const App = () => (
           <Route path="/" element={<Layout />}>
             <Route path="dashboard" element={<Index />} />
             <Route path="roadmap" element={<Roadmap />} />
+            <Route path="tasks" element={<Tasks />} />
             <Route path="tasks/:id" element={<TaskDetail />} />
             <Route path="portfolio" element={<Portfolio />} />
             <Route path="community" element={<Community />} />
             <Route path="profile" element={<Profile />} />
             <Route path="premium" element={<Premium />} />
+            <Route path="learning" element={<Learning />} />
+            <Route path="schedule" element={<Schedule />} />
+            <Route path="notes" element={<Notes />} />
+            <Route path="resources" element={<Resources />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="admin" element={<Admin />} />
+            <Route path="support" element={<Support />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

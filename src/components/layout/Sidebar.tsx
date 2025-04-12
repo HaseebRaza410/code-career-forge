@@ -13,7 +13,9 @@ import {
   MessageSquare, 
   Settings, 
   User, 
-  Video 
+  Video,
+  Lock,
+  FileQuestion
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -64,7 +66,7 @@ export function Sidebar() {
             icon={<Video className="h-5 w-5" />} 
             label="Learning" 
             href="/learning" 
-            active={pathname.startsWith('/learning')} 
+            active={pathname === '/learning'} 
           />
           <SidebarItem 
             icon={<Calendar className="h-5 w-5" />} 
@@ -120,6 +122,12 @@ export function Sidebar() {
             href="/resources" 
             active={pathname === '/resources'} 
           />
+          <SidebarItem 
+            icon={<FileQuestion className="h-5 w-5" />} 
+            label="Help & Support" 
+            href="/support" 
+            active={pathname === '/support'} 
+          />
         </div>
       </div>
       
@@ -136,6 +144,12 @@ export function Sidebar() {
             label="Settings" 
             href="/settings" 
             active={pathname === '/settings'} 
+          />
+          <SidebarItem 
+            icon={<Lock className="h-5 w-5" />} 
+            label="Admin Panel" 
+            href="/admin" 
+            active={pathname === '/admin'} 
           />
         </div>
       </div>
