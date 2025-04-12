@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { 
   BookmarkPlus, 
   CheckCircle2, 
@@ -23,14 +23,12 @@ export default function TaskDetail() {
   const [status, setStatus] = useState<"not-started" | "in-progress" | "completed">("not-started");
 
   useEffect(() => {
-    // In a real app, we would fetch from the backend
     const foundTask = mockTasks.find(t => t.id === id);
     setTask(foundTask);
     
     if (foundTask) {
       setStatus(foundTask.status);
       
-      // Find related notes
       const taskNotes = mockNotes.filter(note => note.taskId === id);
       setNotes(taskNotes);
     }
@@ -50,14 +48,12 @@ export default function TaskDetail() {
     setNotes([...notes, newNoteObj]);
     setNewNote("");
     
-    // In a real app, we would save to the backend
     console.log("Saving note:", newNoteObj);
   };
 
   const handleStatusChange = (newStatus: "not-started" | "in-progress" | "completed") => {
     setStatus(newStatus);
     
-    // In a real app, we would update the backend
     console.log("Updating task status:", newStatus);
   };
 
