@@ -10,6 +10,13 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import Tasks from "./pages/Tasks";
+import TaskDetail from "./pages/TaskDetail";
+import Roadmap from "./pages/Roadmap";
+import Community from "./pages/Community";
+import Portfolio from "./pages/Portfolio";
+import Profile from "./pages/Profile";
+import Premium from "./pages/Premium";
 
 const queryClient = new QueryClient();
 
@@ -20,12 +27,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Index />} />
-          </Route>
-          <Route path="/landing" element={<Landing />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Layout />}>
+            <Route path="dashboard" element={<Index />} />
+            <Route path="roadmap" element={<Roadmap />} />
+            <Route path="tasks/:id" element={<TaskDetail />} />
+            <Route path="portfolio" element={<Portfolio />} />
+            <Route path="community" element={<Community />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="premium" element={<Premium />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

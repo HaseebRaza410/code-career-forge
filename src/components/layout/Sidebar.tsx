@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
@@ -50,14 +51,14 @@ export function Sidebar() {
           <SidebarItem 
             icon={<Home className="h-5 w-5" />} 
             label="Home" 
-            href="/" 
-            active={pathname === '/'} 
+            href="/dashboard" 
+            active={pathname === '/dashboard'} 
           />
           <SidebarItem 
             icon={<CheckSquare className="h-5 w-5" />} 
             label="Tasks" 
             href="/tasks" 
-            active={pathname === '/tasks'} 
+            active={pathname === '/tasks' || pathname.startsWith('/tasks/')} 
           />
           <SidebarItem 
             icon={<Video className="h-5 w-5" />} 
@@ -110,8 +111,8 @@ export function Sidebar() {
           <SidebarItem 
             icon={<MessageSquare className="h-5 w-5" />} 
             label="Discussions" 
-            href="/discussions" 
-            active={pathname === '/discussions'} 
+            href="/community" 
+            active={pathname === '/community'} 
           />
           <SidebarItem 
             icon={<Book className="h-5 w-5" />} 
