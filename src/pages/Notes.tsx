@@ -272,6 +272,7 @@ export default function Notes() {
                     <NoteEditor
                       initialContent={editContent}
                       onChange={setEditContent}
+                      onSave={handleSaveNote}
                     />
                   </div>
                 ) : (
