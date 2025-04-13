@@ -1,97 +1,174 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+import { NoteEditor } from "@/components/notes/NoteEditor";
+import { mockNotes } from "@/lib/mock-data";
+import { Note } from "@/lib/types";
 import { 
-  Calendar,
-  Edit2, 
   FileText, 
   Folder, 
-  MoreVertical, 
   Plus, 
   Search, 
-  Trash2
+  Tag,
+  Trash2,
+  Share2,
+  AlertTriangle,
+  Save
 } from "lucide-react";
-
-// Mock data for notes
-const mockNotes = [
-  {
-    id: "note1",
-    title: "React Hooks Overview",
-    content: "useState: For managing local state\nuseEffect: For side effects\nuseContext: For context access\nuseReducer: For complex state\nuseCallback: For memoized callbacks\nuseMemo: For memoized values\nuseRef: For persistent references",
-    category: "React",
-    createdAt: new Date(2025, 3, 10),
-    relatedTask: "Getting Started with React"
-  },
-  {
-    id: "note2",
-    title: "CSS Grid Layout Properties",
-    content: "grid-template-columns: Define the columns\ngrid-template-rows: Define the rows\ngrid-gap: Set the gap between items\ngrid-column: Specify column position\ngrid-row: Specify row position\nalign-items: Vertical alignment\njustify-items: Horizontal alignment",
-    category: "CSS",
-    createdAt: new Date(2025, 3, 8),
-    relatedTask: "CSS Grid Layout Mastery"
-  },
-  {
-    id: "note3",
-    title: "JavaScript Promises",
-    content: "Promises represent the eventual completion of an async operation.\n\nThree states:\n- Pending: Initial state\n- Fulfilled: Operation completed successfully\n- Rejected: Operation failed\n\nMethods:\n- Promise.then(): Handle fulfilled promise\n- Promise.catch(): Handle rejected promise\n- Promise.finally(): Executes regardless of success/failure",
-    category: "JavaScript",
-    createdAt: new Date(2025, 3, 5),
-    relatedTask: "JavaScript Promises and Async/Await"
-  }
-];
+import { useToast } from "@/hooks/use-toast";
 
 export default function Notes() {
+  const [notes, setNotes] = useState<Note[]>(mockNotes);
+  const [activeNote, setActiveNote] = useState<Note | null>(notes[0] || null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [notes, setNotes] = useState(mockNotes);
-  const [newNote, setNewNote] = useState({
-    title: "",
-    content: "",
-    category: "General"
-  });
-  const [selectedNote, setSelectedNote] = useState<string | null>(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editContent, setEditContent] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
-  const filteredNotes = notes.filter(note => {
-    if (!searchQuery) return true;
-    
-    return (
-      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  const filteredNotes = notes.filter(note =>
+    note.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   
-  const handleSaveNote = () => {
-    if (!newNote.title || !newNote.content) return;
-    
-    const newNoteObj = {
+  const handleCreateNote = () => {
+    const newNote: Note = {
       id: `note-${Date.now()}`,
-      title: newNote.title,
-      content: newNote.content,
-      category: newNote.category,
+      content: "# New Note\n\nStart writing here...",
       createdAt: new Date(),
-      relatedTask: ""
+      updatedAt: new Date(),
     };
     
-    setNotes([...notes, newNoteObj]);
-    setNewNote({
-      title: "",
-      content: "",
-      category: "General"
+    setNotes([newNote, ...notes]);
+    setActiveNote(newNote);
+    setEditMode(true);
+    setEditContent(newNote.content);
+    
+    toast({
+      title: "Note Created",
+      description: "Your new note has been created."
+    });
+  };
+  
+  const handleDeleteNote = () => {
+    if (!activeNote) return;
+    
+    const updatedNotes = notes.filter(note => note.id !== activeNote.id);
+    setNotes(updatedNotes);
+    setActiveNote(updatedNotes[0] || null);
+    setShowConfirmDelete(false);
+    
+    toast({
+      title: "Note Deleted",
+      description: "Your note has been deleted."
+    });
+  };
+  
+  const handleSaveNote = () => {
+    if (!activeNote) return;
+    
+    const updatedNotes = notes.map(note => 
+      note.id === activeNote.id 
+        ? { ...note, content: editContent, updatedAt: new Date() } 
+        : note
+    );
+    
+    setNotes(updatedNotes);
+    setActiveNote({ ...activeNote, content: editContent, updatedAt: new Date() });
+    setEditMode(false);
+    
+    toast({
+      title: "Note Saved",
+      description: "Your changes have been saved."
+    });
+  };
+  
+  const handleImportNote = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        
+        const newNote: Note = {
+          id: `note-${Date.now()}`,
+          content,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        
+        setNotes([newNote, ...notes]);
+        setActiveNote(newNote);
+        
+        toast({
+          title: "Note Imported",
+          description: `${file.name} has been imported successfully.`
+        });
+      } catch (error) {
+        toast({
+          title: "Import Failed",
+          description: "Could not import the file. Please try again.",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    reader.readAsText(file);
+  };
+  
+  const exportNote = () => {
+    if (!activeNote) return;
+    
+    const blob = new Blob([activeNote.content], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `note-${new Date().toISOString().slice(0, 10)}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Note Exported",
+      description: "Your note has been exported as a Markdown file."
     });
   };
   
   return (
     <div className="container py-6">
       <h1 className="text-3xl font-bold mb-2">Notes</h1>
-      <p className="text-muted-foreground mb-6">Organize your learning notes and key concepts</p>
+      <p className="text-muted-foreground mb-6">Capture and organize your thoughts</p>
       
-      <div className="grid md:grid-cols-[300px_1fr] gap-6">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-1 space-y-4">
+          <div className="flex gap-2">
+            <Button onClick={handleCreateNote} className="flex-1">
+              <Plus className="h-4 w-4 mr-2" />
+              New Note
+            </Button>
+            <Button variant="outline" onClick={handleImportNote}>
+              <Folder className="h-4 w-4" />
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept=".md,.txt"
+              onChange={handleFileImport}
+            />
+          </div>
+          
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -103,242 +180,166 @@ export default function Notes() {
             />
           </div>
           
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Categories</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Folder className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span>All Notes</span>
-                </div>
-                <Badge>{notes.length}</Badge>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Folder className="h-4 w-4 mr-2 text-blue-500" />
-                  <span>React</span>
-                </div>
-                <Badge>{notes.filter(note => note.category === "React").length}</Badge>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Folder className="h-4 w-4 mr-2 text-purple-500" />
-                  <span>CSS</span>
-                </div>
-                <Badge>{notes.filter(note => note.category === "CSS").length}</Badge>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                  <span>JavaScript</span>
-                </div>
-                <Badge>{notes.filter(note => note.category === "JavaScript").length}</Badge>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Folder className="h-4 w-4 mr-2 text-green-500" />
-                  <span>General</span>
-                </div>
-                <Badge>{notes.filter(note => note.category === "General").length}</Badge>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full" onClick={() => setSelectedNote(null)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create New Note
-              </Button>
-            </CardFooter>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Recent Notes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {filteredNotes
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                .slice(0, 5)
-                .map(note => (
+          <div className="border rounded-md overflow-hidden">
+            <div className="bg-muted px-3 py-2 font-medium text-sm">Your Notes</div>
+            <div className="divide-y max-h-[600px] overflow-y-auto">
+              {filteredNotes.length > 0 ? (
+                filteredNotes.map(note => (
                   <div 
                     key={note.id} 
-                    className={`rounded-lg border p-3 cursor-pointer hover:bg-accent transition-colors ${selectedNote === note.id ? 'bg-accent' : ''}`}
-                    onClick={() => setSelectedNote(note.id)}
+                    className={`px-3 py-2 cursor-pointer hover:bg-accent transition-colors ${note.id === activeNote?.id ? 'bg-accent' : ''}`}
+                    onClick={() => {
+                      setActiveNote(note);
+                      setEditMode(false);
+                      setEditContent(note.content);
+                    }}
                   >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium line-clamp-1">{note.title}</h3>
-                        <div className="flex items-center text-xs text-muted-foreground mt-1">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          <span>{new Date(note.createdAt).toLocaleDateString()}</span>
+                    <div className="flex items-start">
+                      <FileText className="h-4 w-4 mt-1 mr-2 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">
+                          {note.content.split('\n')[0].replace(/^#+\s/, '') || 'Untitled Note'}
+                        </h4>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {note.content.split('\n').slice(1).join(' ').slice(0, 50)}...
+                        </p>
+                        <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                          <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
+                          <span className="mx-1">•</span>
+                          <span>{note.taskId ? 'Task Note' : 'General Note'}</span>
                         </div>
                       </div>
-                      <Badge variant="outline">{note.category}</Badge>
                     </div>
                   </div>
                 ))
-              }
-              
-              {filteredNotes.length === 0 && (
-                <div className="text-center py-4">
-                  <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">No notes found</p>
+              ) : (
+                <div className="px-3 py-4 text-center text-muted-foreground">
+                  <p>No notes found</p>
+                  <p className="text-xs">Try changing your search query</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
         
-        <div>
-          <Tabs defaultValue="view">
-            <TabsList className="mb-6">
-              <TabsTrigger value="view">View Notes</TabsTrigger>
-              <TabsTrigger value="create">Create Note</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="view">
-              {selectedNote ? (
-                (() => {
-                  const note = notes.find(n => n.id === selectedNote);
-                  
-                  if (!note) return (
-                    <Card>
-                      <CardContent className="p-8 text-center">
-                        <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-xl font-medium mb-2">No note selected</h3>
-                        <p className="text-muted-foreground">
-                          Select a note from the list or create a new one
-                        </p>
-                      </CardContent>
-                    </Card>
-                  );
-                  
-                  return (
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle>{note.title}</CardTitle>
-                            <div className="flex items-center text-sm text-muted-foreground mt-1">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              <span>{new Date(note.createdAt).toLocaleDateString()}</span>
-                              {note.relatedTask && (
-                                <>
-                                  <span className="mx-1">•</span>
-                                  <span>Related to: {note.relatedTask}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="icon">
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                            <Button variant="outline" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <Badge className="mb-4">{note.category}</Badge>
-                        <div className="whitespace-pre-wrap">
-                          {note.content}
-                        </div>
-                      </CardContent>
-                      <CardFooter className="justify-between border-t pt-6">
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </Button>
-                        <Button size="sm">
-                          <Edit2 className="h-4 w-4 mr-2" />
-                          Edit Note
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  );
-                })()
-              ) : (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-xl font-medium mb-2">No note selected</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Select a note from the list or create a new one
-                    </p>
-                    <Button onClick={() => document.querySelector('[value="create"]')?.click()}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create New Note
+        <div className="md:col-span-2">
+          {activeNote ? (
+            <Card className="h-full flex flex-col">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="space-y-1">
+                  <CardTitle>
+                    {activeNote.content.split('\n')[0].replace(/^#+\s/, '') || 'Untitled Note'}
+                  </CardTitle>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <span>Updated: {new Date(activeNote.updatedAt).toLocaleString()}</span>
+                    <span className="mx-1">•</span>
+                    <span>Created: {new Date(activeNote.createdAt).toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  {editMode ? (
+                    <Button size="sm" onClick={handleSaveNote}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save
                     </Button>
-                  </CardContent>
-                </Card>
+                  ) : (
+                    <>
+                      <Button variant="outline" size="sm" onClick={() => {
+                        setEditMode(true);
+                        setEditContent(activeNote.content);
+                      }}>
+                        Edit
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={exportNote}>
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-red-500"
+                        onClick={() => setShowConfirmDelete(true)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </CardHeader>
+              
+              <CardContent className="flex-grow py-0">
+                {editMode ? (
+                  <div className="h-full">
+                    <NoteEditor
+                      content={editContent}
+                      onChange={setEditContent}
+                    />
+                  </div>
+                ) : (
+                  <div className="prose prose-sm dark:prose-invert max-w-none h-full overflow-y-auto">
+                    {/* This would be a markdown renderer in a real app */}
+                    <pre className="whitespace-pre-wrap">
+                      {activeNote.content}
+                    </pre>
+                  </div>
+                )}
+              </CardContent>
+              
+              {!editMode && (
+                <div className="p-4 border-t">
+                  <div className="flex items-center">
+                    <Tag className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Tags:</span>
+                    <div className="flex gap-1 ml-2">
+                      <div className="bg-muted text-xs px-2 py-1 rounded">javascript</div>
+                      <div className="bg-muted text-xs px-2 py-1 rounded">react</div>
+                      <div className="bg-muted text-xs px-2 py-1 rounded">+Add</div>
+                    </div>
+                  </div>
+                </div>
               )}
-            </TabsContent>
-            
-            <TabsContent value="create">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Create New Note</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="title" className="text-sm font-medium">Title</label>
-                    <Input 
-                      id="title"
-                      placeholder="Note title"
-                      value={newNote.title}
-                      onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="category" className="text-sm font-medium">Category</label>
-                    <select 
-                      id="category"
-                      className="w-full rounded-md border p-2"
-                      value={newNote.category}
-                      onChange={(e) => setNewNote({ ...newNote, category: e.target.value })}
-                    >
-                      <option value="General">General</option>
-                      <option value="React">React</option>
-                      <option value="JavaScript">JavaScript</option>
-                      <option value="CSS">CSS</option>
-                      <option value="HTML">HTML</option>
-                      <option value="Node.js">Node.js</option>
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="content" className="text-sm font-medium">Content</label>
-                    <Textarea 
-                      id="content"
-                      placeholder="Write your note here..."
-                      rows={12}
-                      value={newNote.content}
-                      onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter className="justify-between">
-                  <Button variant="outline" onClick={() => document.querySelector('[value="view"]')?.click()}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveNote}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Save Note
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-          </Tabs>
+            </Card>
+          ) : (
+            <Card className="h-full flex items-center justify-center">
+              <CardContent className="text-center py-10">
+                <FileText className="h-16 w-16 mx-auto text-muted-foreground/50" />
+                <h3 className="mt-4 text-lg font-medium">No Note Selected</h3>
+                <p className="text-muted-foreground mb-4">
+                  Select a note from the sidebar or create a new one
+                </p>
+                <Button onClick={handleCreateNote}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create New Note
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
+      
+      {showConfirmDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-[400px]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                Delete Note
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Are you sure you want to delete this note? This action cannot be undone.</p>
+            </CardContent>
+            <div className="flex justify-end gap-2 p-6 pt-0">
+              <Button variant="outline" onClick={() => setShowConfirmDelete(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteNote}>
+                Delete
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

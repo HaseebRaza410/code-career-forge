@@ -1,23 +1,23 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Github, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const { signUp, loading } = useAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
@@ -30,18 +30,20 @@ export function RegisterForm() {
       return;
     }
     
-    setLoading(true);
-    
-    // Simulate registration
-    setTimeout(() => {
-      setLoading(false);
+    if (password.length < 8) {
       toast({
-        title: "Success",
-        description: "Registration successful! Redirecting to dashboard..."
+        title: "Error",
+        description: "Password must be at least 8 characters long",
+        variant: "destructive"
       });
-      // In a real app, store user data in context/state management
-      navigate("/");
-    }, 1000);
+      return;
+    }
+    
+    try {
+      await signUp(email, password, name);
+    } catch (error) {
+      console.error('Error in register form:', error);
+    }
   };
   
   return (
@@ -131,9 +133,11 @@ export function RegisterForm() {
       <CardFooter>
         <p className="text-sm text-center w-full text-muted-foreground">
           Already have an account?{" "}
-          <Button variant="link" className="p-0" onClick={() => navigate("/login")}>
-            Sign in
-          </Button>
+          <Link to="/login">
+            <Button variant="link" className="p-0">
+              Sign in
+            </Button>
+          </Link>
         </p>
       </CardFooter>
     </Card>

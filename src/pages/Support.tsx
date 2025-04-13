@@ -1,89 +1,121 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useRef } from "react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { HelpCircle, Mail, MessageSquare, Send } from "lucide-react";
-
-// FAQ data
-const faqs = [
-  {
-    question: "How do I reset my password?",
-    answer: "To reset your password, go to the login page and click on 'Forgot Password'. Enter your email address and follow the instructions sent to your email."
-  },
-  {
-    question: "Can I download videos for offline viewing?",
-    answer: "Currently, we don't support downloading videos for offline viewing. However, premium users can access all content from any device with internet connectivity."
-  },
-  {
-    question: "How do I track my progress?",
-    answer: "Your progress is automatically tracked as you complete tasks and watch videos. You can view your overall progress on the dashboard and detailed progress in the roadmap section."
-  },
-  {
-    question: "Can I get a certificate after completing the course?",
-    answer: "Yes, after completing the full roadmap, you'll receive a certificate of completion that you can share on your resume or LinkedIn profile."
-  },
-  {
-    question: "What happens if I miss a scheduled session?",
-    answer: "If you miss a scheduled session, you can reschedule it through the Schedule page. There's no penalty for rescheduling, but we encourage maintaining a consistent learning routine."
-  },
-  {
-    question: "How can I contribute to the community?",
-    answer: "You can contribute by participating in discussions, answering questions from other learners, and sharing your projects and experiences. Active community members may be invited to become mentors."
-  },
-  {
-    question: "Is there a mobile app available?",
-    answer: "We're currently developing mobile apps for iOS and Android. Stay tuned for the announcement. In the meantime, our website is fully responsive and works well on mobile devices."
-  },
-  {
-    question: "What payment methods do you accept?",
-    answer: "We accept all major credit cards, PayPal, and in select countries, bank transfers. All payments are securely processed through our payment partners."
-  }
-];
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  HelpCircle, 
+  FileText, 
+  MessageSquare, 
+  Search,
+  ThumbsUp,
+  ThumbsDown
+} from "lucide-react";
 
 export default function Support() {
-  const [contactForm, setContactForm] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: ""
-  });
+  const [activeTab, setActiveTab] = useState("faq");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactSubject, setContactSubject] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const faqs = [
+    {
+      question: "How do I track my progress?",
+      answer: "Your progress is automatically tracked as you complete tasks and watch videos. You can view your progress on the dashboard and in detailed reports in your profile page."
+    },
+    {
+      question: "Can I download videos for offline viewing?",
+      answer: "Currently, videos cannot be downloaded directly from the platform. However, premium users can access a special link that allows for temporary offline access to content."
+    },
+    {
+      question: "How do I reset my password?",
+      answer: "To reset your password, go to the login page and click on 'Forgot Password?' Enter your email address and follow the instructions sent to your inbox."
+    },
+    {
+      question: "Are there coding exercises for each lesson?",
+      answer: "Yes, most lessons include practical coding exercises that reinforce the concepts taught in the videos. These exercises range from simple tasks to complex projects."
+    },
+    {
+      question: "Can I get a certificate after completing the course?",
+      answer: "Yes, upon completing all tasks in the roadmap, you'll receive a certificate of completion that you can add to your resume or LinkedIn profile."
+    },
+    {
+      question: "How can I contribute to the platform?",
+      answer: "We welcome contributions! You can suggest new content, report errors, or even submit your own tutorials. Contact us through the 'Contact Support' tab for more information."
+    },
+    {
+      question: "Is there a mobile app available?",
+      answer: "We're currently developing mobile apps for iOS and Android. For now, our website is fully responsive and works well on mobile browsers."
+    },
+    {
+      question: "What languages are supported?",
+      answer: "Currently, we offer content in English, Hindi, and Urdu. We're working on expanding to more languages in the future."
+    }
+  ];
+  
+  const filteredFaqs = faqs.filter(faq => 
+    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const handleSubmitTicket = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Contact form submitted:", contactForm);
-    // In a real app, we would send this to the backend
-    alert("Your message has been sent! We'll get back to you soon.");
-    setContactForm({
-      name: "",
-      email: "",
-      subject: "",
-      message: ""
+    
+    // Basic validation
+    if (!contactName || !contactEmail || !contactSubject || !contactMessage) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Simulate ticket submission
+    toast({
+      title: "Ticket Submitted",
+      description: "We'll get back to you as soon as possible.",
     });
+    
+    // Reset form
+    setContactName("");
+    setContactEmail("");
+    setContactSubject("");
+    setContactMessage("");
+  };
+  
+  const handleAttachFile = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
   
   return (
     <div className="container py-6">
       <h1 className="text-3xl font-bold mb-2">Help & Support</h1>
-      <p className="text-muted-foreground mb-6">Get help with your account and learning journey</p>
+      <p className="text-muted-foreground mb-6">Find answers or get assistance with any questions</p>
       
-      <Tabs defaultValue="faq">
-        <TabsList className="mb-6">
-          <TabsTrigger value="faq">
-            <HelpCircle className="h-4 w-4 mr-2" />
-            FAQ
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="faq" className="flex items-center gap-2">
+            <HelpCircle className="h-4 w-4" />
+            <span>FAQ</span>
           </TabsTrigger>
-          <TabsTrigger value="contact">
-            <Mail className="h-4 w-4 mr-2" />
-            Contact Us
+          <TabsTrigger value="guides" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>Guides</span>
           </TabsTrigger>
-          <TabsTrigger value="chat">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Live Chat
+          <TabsTrigger value="contact" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            <span>Contact Support</span>
           </TabsTrigger>
         </TabsList>
         
@@ -91,224 +123,258 @@ export default function Support() {
           <Card>
             <CardHeader>
               <CardTitle>Frequently Asked Questions</CardTitle>
+              <CardDescription>Find quick answers to common questions</CardDescription>
+              <div className="relative mt-2">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search FAQs..."
+                  className="pl-8"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </CardHeader>
             <CardContent>
-              <Accordion type="single" collapsible className="w-full">
-                {faqs.map((faq, index) => (
-                  <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger className="text-left">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+              <div className="space-y-4">
+                {filteredFaqs.length > 0 ? (
+                  filteredFaqs.map((faq, index) => (
+                    <div key={index} className="border rounded-lg p-4">
+                      <h3 className="font-medium mb-2">{faq.question}</h3>
+                      <p className="text-muted-foreground">{faq.answer}</p>
+                      <div className="flex items-center justify-end mt-2 space-x-2">
+                        <div className="text-xs text-muted-foreground">Was this helpful?</div>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <ThumbsUp className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <ThumbsDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <HelpCircle className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <h3 className="mt-2 font-medium">No results found</h3>
+                    <p className="text-muted-foreground">
+                      Try using different keywords or browse our guides.
+                    </p>
+                  </div>
+                )}
+              </div>
             </CardContent>
-            <CardFooter className="flex-col items-start border-t pt-6">
-              <h3 className="font-medium mb-2">Didn't find what you're looking for?</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Contact our support team for personalized assistance.
-              </p>
-              <Button onClick={() => document.querySelector('[value="contact"]')?.click()}>
-                Contact Support
-              </Button>
-            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="guides">
+          <Card>
+            <CardHeader>
+              <CardTitle>Guides & Tutorials</CardTitle>
+              <CardDescription>Step-by-step instructions for using the platform</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="aspect-video bg-muted relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="h-12 w-12 text-muted-foreground opacity-50">
+                        <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.3" />
+                        <path d="M15 12L10 15V9L15 12Z" fill="currentColor" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-medium">Getting Started</h3>
+                    <p className="text-sm text-muted-foreground">Learn how to set up your account and navigate the platform.</p>
+                    <Button variant="link" className="p-0 h-auto mt-1">Watch Guide</Button>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="aspect-video bg-muted relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="h-12 w-12 text-muted-foreground opacity-50">
+                        <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.3" />
+                        <path d="M15 12L10 15V9L15 12Z" fill="currentColor" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-medium">Using the Task Tracker</h3>
+                    <p className="text-sm text-muted-foreground">Master the task management system to track your progress.</p>
+                    <Button variant="link" className="p-0 h-auto mt-1">Watch Guide</Button>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="aspect-video bg-muted relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="h-12 w-12 text-muted-foreground opacity-50">
+                        <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.3" />
+                        <path d="M15 12L10 15V9L15 12Z" fill="currentColor" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-medium">Taking Effective Notes</h3>
+                    <p className="text-sm text-muted-foreground">Tips for organizing and using the notes feature effectively.</p>
+                    <Button variant="link" className="p-0 h-auto mt-1">Watch Guide</Button>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="aspect-video bg-muted relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="h-12 w-12 text-muted-foreground opacity-50">
+                        <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.3" />
+                        <path d="M15 12L10 15V9L15 12Z" fill="currentColor" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-medium">Building Your Portfolio</h3>
+                    <p className="text-sm text-muted-foreground">Learn how to showcase your skills with the portfolio builder.</p>
+                    <Button variant="link" className="p-0 h-auto mt-1">Watch Guide</Button>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="aspect-video bg-muted relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="h-12 w-12 text-muted-foreground opacity-50">
+                        <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.3" />
+                        <path d="M15 12L10 15V9L15 12Z" fill="currentColor" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-medium">Community Interaction</h3>
+                    <p className="text-sm text-muted-foreground">How to engage with other learners and get help.</p>
+                    <Button variant="link" className="p-0 h-auto mt-1">Watch Guide</Button>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="aspect-video bg-muted relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="h-12 w-12 text-muted-foreground opacity-50">
+                        <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.3" />
+                        <path d="M15 12L10 15V9L15 12Z" fill="currentColor" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-medium">Premium Features</h3>
+                    <p className="text-sm text-muted-foreground">Explore the additional benefits available with premium membership.</p>
+                    <Button variant="link" className="p-0 h-auto mt-1">Watch Guide</Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
         
         <TabsContent value="contact">
-          <div className="grid md:grid-cols-[3fr_2fr] gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Our Support Team</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleContactSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Your Name</Label>
-                      <Input 
-                        id="name" 
-                        placeholder="John Doe"
-                        value={contactForm.name}
-                        onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input 
-                        id="email" 
-                        type="email"
-                        placeholder="john@example.com"
-                        value={contactForm.email}
-                        onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input 
-                      id="subject" 
-                      placeholder="How can we help you?"
-                      value={contactForm.subject}
-                      onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea 
-                      id="message" 
-                      placeholder="Please describe your issue in detail..."
-                      rows={6}
-                      value={contactForm.message}
-                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                      required
-                    />
-                  </div>
-                  
-                  <Button type="submit" className="w-full">
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Message
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Support Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="font-medium mb-2">Response Time</h3>
-                  <p className="text-sm text-muted-foreground">
-                    We aim to respond to all inquiries within 24 hours during business days.
-                  </p>
-                </div>
-                
-                <div>
-                  <h3 className="font-medium mb-2">Email Support</h3>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    General Inquiries:
-                  </p>
-                  <a href="mailto:support@codeforge.com" className="text-brand-purple hover:underline">
-                    support@codeforge.com
-                  </a>
-                  
-                  <p className="text-sm text-muted-foreground mt-4 mb-1">
-                    Technical Support:
-                  </p>
-                  <a href="mailto:tech@codeforge.com" className="text-brand-purple hover:underline">
-                    tech@codeforge.com
-                  </a>
-                </div>
-                
-                <div>
-                  <h3 className="font-medium mb-2">Business Hours</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Monday - Friday: 9:00 AM - 6:00 PM (UTC)
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Saturday: 10:00 AM - 2:00 PM (UTC)
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Sunday: Closed
-                  </p>
-                </div>
-                
-                <div className="bg-muted p-4 rounded-lg">
-                  <h3 className="font-medium mb-2">Premium Support</h3>
-                  <p className="text-sm mb-4">
-                    Premium members receive priority support with faster response times.
-                  </p>
-                  <Button variant="outline" className="w-full" onClick={() => window.location.href = '/premium'}>
-                    Upgrade to Premium
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="chat">
           <Card>
             <CardHeader>
-              <CardTitle>Live Chat Support</CardTitle>
+              <CardTitle>Contact Support</CardTitle>
+              <CardDescription>Submit a ticket and we'll get back to you as soon as possible</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="bg-muted w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                <MessageSquare className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-xl font-medium mb-2">Live Chat Coming Soon</h3>
-              <p className="text-muted-foreground text-center max-w-md mb-6">
-                We're working on implementing live chat support for faster assistance. 
-                In the meantime, please use our contact form or email support.
-              </p>
-              <Button onClick={() => document.querySelector('[value="contact"]')?.click()}>
-                Contact Support
-              </Button>
+            <CardContent>
+              <form onSubmit={handleSubmitTicket}>
+                <div className="grid gap-4 md:grid-cols-2 mb-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Your Name <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="name" 
+                      placeholder="Enter your name" 
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="Enter your email" 
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2 mb-4">
+                  <Label htmlFor="subject">Subject <span className="text-red-500">*</span></Label>
+                  <Input 
+                    id="subject" 
+                    placeholder="What's your inquiry about?" 
+                    value={contactSubject}
+                    onChange={(e) => setContactSubject(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2 mb-4">
+                  <Label htmlFor="message">Message <span className="text-red-500">*</span></Label>
+                  <Textarea 
+                    id="message" 
+                    placeholder="Please describe your issue in detail" 
+                    rows={5}
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2 mb-6">
+                  <Label htmlFor="attachment">Attachments (optional)</Label>
+                  <div className="flex items-center gap-2">
+                    <Button type="button" variant="outline" onClick={handleAttachFile}>
+                      Add File
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      Max file size: 5MB (PNG, JPG, PDF)
+                    </span>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept=".png,.jpg,.jpeg,.pdf"
+                    />
+                  </div>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-muted/30 mb-6">
+                  <h4 className="font-medium mb-2">Before contacting support:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Check our <Button variant="link" className="p-0 h-auto" onClick={() => setActiveTab("faq")}>FAQ section</Button> for quick answers</li>
+                    <li>Review the <Button variant="link" className="p-0 h-auto" onClick={() => setActiveTab("guides")}>guides and tutorials</Button> for detailed help</li>
+                    <li>For account-specific issues, please include your username and any error messages</li>
+                  </ul>
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button type="submit">Submit Ticket</Button>
+                </div>
+              </form>
             </CardContent>
+            <CardFooter className="border-t bg-muted/50 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center">
+                <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="text-sm">Average response time: <strong>12 hours</strong></span>
+              </div>
+              <div className="sm:ml-auto text-sm text-muted-foreground">
+                Need urgent help? Email us directly at <a href="mailto:support@codeforge.com" className="text-blue-600">support@codeforge.com</a>
+              </div>
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
-      
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Popular Help Topics</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <svg className="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              </div>
-              <h3 className="font-medium mb-2">Getting Started</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Learn how to set up your account, navigate the platform, and begin your learning journey.
-              </p>
-              <Button variant="link" className="p-0 h-auto">View Guide</Button>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <svg className="h-6 w-6 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-              <h3 className="font-medium mb-2">Task Management</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Tips for organizing your tasks, tracking progress, and staying on schedule with your learning goals.
-              </p>
-              <Button variant="link" className="p-0 h-auto">View Guide</Button>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <svg className="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-              </div>
-              <h3 className="font-medium mb-2">Video Playback Issues</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Troubleshooting common video playback problems and optimizing your learning experience.
-              </p>
-              <Button variant="link" className="p-0 h-auto">View Guide</Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
     </div>
   );
 }

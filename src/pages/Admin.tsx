@@ -1,504 +1,531 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { User } from "@/lib/types";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
 import { 
-  ArrowUpCircle,
-  CheckCircle2, 
-  FilePlus, 
-  Lock, 
-  Plus, 
-  Trash2, 
-  Upload, 
-  User, 
-  Video
+  Users, 
+  Video as VideoIcon, 
+  FileText, 
+  BarChart2, 
+  Settings, 
+  Upload,
+  PlusCircle, 
+  Check, 
+  AlertTriangle,
+  Search 
 } from "lucide-react";
 
 export default function Admin() {
-  const [tabValue, setTabValue] = useState("videos");
-  const [adminAuthenticated, setAdminAuthenticated] = useState(false);
-  const [loginForm, setLoginForm] = useState({
-    username: "",
-    password: ""
-  });
+  const [activeTab, setActiveTab] = useState("overview");
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
   
-  // Mock video form state
-  const [videoForm, setVideoForm] = useState({
-    title: "",
-    description: "",
-    youtubeId: "",
-    category: "",
-    language: "english",
-    duration: 0,
-    tags: ""
-  });
-  
-  // Mock admin stats
-  const adminStats = {
-    totalVideos: 87,
-    totalUsers: 524,
-    totalTasks: 156,
-    activeUsers: 327
-  };
-  
-  // Mock recent users
-  const recentUsers = [
-    { id: "user1", name: "John Doe", email: "john@example.com", joinDate: "2025-04-10", plan: "Free" },
-    { id: "user2", name: "Sarah Johnson", email: "sarah@example.com", joinDate: "2025-04-09", plan: "Premium" },
-    { id: "user3", name: "Michael Brown", email: "michael@example.com", joinDate: "2025-04-08", plan: "Free" },
-    { id: "user4", name: "Emily Davis", email: "emily@example.com", joinDate: "2025-04-07", plan: "Premium" }
-  ];
-  
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    // Mock data - would be replaced with Supabase query
+    const mockUsers: User[] = [
+      {
+        id: "1",
+        name: "John Doe",
+        email: "john@example.com",
+        joinedAt: new Date(2023, 1, 15),
+        streak: 5,
+        lastActive: new Date(2023, 3, 10),
+        isPremium: true
+      },
+      {
+        id: "2",
+        name: "Jane Smith",
+        email: "jane@example.com",
+        joinedAt: new Date(2023, 2, 20),
+        streak: 12,
+        lastActive: new Date(2023, 3, 11),
+        isPremium: false
+      },
+      {
+        id: "3",
+        name: "Mike Johnson",
+        email: "mike@example.com",
+        joinedAt: new Date(2023, 0, 5),
+        streak: 30,
+        lastActive: new Date(2023, 3, 9),
+        isPremium: true
+      },
+      {
+        id: "4",
+        name: "Sarah Williams",
+        email: "sarah@example.com",
+        joinedAt: new Date(2023, 3, 1),
+        streak: 2,
+        lastActive: new Date(2023, 3, 11),
+        isPremium: false
+      },
+      {
+        id: "5",
+        name: "David Brown",
+        email: "david@example.com",
+        joinedAt: new Date(2022, 11, 10),
+        streak: 45,
+        lastActive: new Date(2023, 3, 8),
+        isPremium: true
+      }
+    ];
     
-    // Mock admin authentication
-    if (loginForm.username === "admin" && loginForm.password === "password") {
-      setAdminAuthenticated(true);
-    } else {
-      alert("Invalid credentials. Use username: admin, password: password");
-    }
-  };
+    setUsers(mockUsers);
+  }, []);
   
-  const handleVideoSubmit = (e: React.FormEvent) => {
+  const filteredUsers = users.filter(user => 
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const handleVideoUpload = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting video:", videoForm);
-    // In a real app, we would submit to the backend
-    alert("Video submitted successfully!");
-    setVideoForm({
-      title: "",
-      description: "",
-      youtubeId: "",
-      category: "",
-      language: "english",
-      duration: 0,
-      tags: ""
+    toast({
+      title: "Video Added",
+      description: "The video has been successfully added to the library.",
     });
   };
   
-  if (!adminAuthenticated) {
-    return (
-      <div className="container py-12 max-w-md mx-auto">
-        <Card>
-          <CardHeader className="space-y-1">
-            <div className="flex items-center justify-center mb-4">
-              <Lock className="h-12 w-12 text-muted-foreground" />
-            </div>
-            <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input 
-                    id="username" 
-                    placeholder="admin"
-                    value={loginForm.username}
-                    onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input 
-                    id="password" 
-                    type="password"
-                    placeholder="••••••••"
-                    value={loginForm.password}
-                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Login to Admin Panel
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-          <CardFooter className="justify-center">
-            <p className="text-xs text-muted-foreground">
-              Demo credentials: username: admin, password: password
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
+  const handleTaskCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Task Created",
+      description: "The new task has been successfully created.",
+    });
+  };
   
   return (
     <div className="container py-6">
       <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-      <p className="text-muted-foreground mb-6">Manage content and users</p>
+      <p className="text-muted-foreground mb-6">Manage content, users, and analyze platform metrics</p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground">Total Videos</p>
-                <h3 className="text-3xl font-bold">{adminStats.totalVideos}</h3>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <Video className="h-6 w-6 text-blue-700" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground">Total Users</p>
-                <h3 className="text-3xl font-bold">{adminStats.totalUsers}</h3>
-              </div>
-              <div className="p-3 bg-green-100 rounded-full">
-                <User className="h-6 w-6 text-green-700" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground">Total Tasks</p>
-                <h3 className="text-3xl font-bold">{adminStats.totalTasks}</h3>
-              </div>
-              <div className="p-3 bg-purple-100 rounded-full">
-                <CheckCircle2 className="h-6 w-6 text-purple-700" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground">Active Users</p>
-                <h3 className="text-3xl font-bold">{adminStats.activeUsers}</h3>
-              </div>
-              <div className="p-3 bg-brand-orange/20 rounded-full">
-                <ArrowUpCircle className="h-6 w-6 text-brand-orange" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Tabs defaultValue="videos" value={tabValue} onValueChange={setTabValue}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="videos">
-            <Video className="h-4 w-4 mr-2" />
-            Videos
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid grid-cols-5 gap-4">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <BarChart2 className="h-4 w-4" />
+            <span>Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="tasks">
-            <CheckCircle2 className="h-4 w-4 mr-2" />
-            Tasks
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span>Users</span>
           </TabsTrigger>
-          <TabsTrigger value="users">
-            <User className="h-4 w-4 mr-2" />
-            Users
+          <TabsTrigger value="content" className="flex items-center gap-2">
+            <VideoIcon className="h-4 w-4" />
+            <span>Content</span>
           </TabsTrigger>
-          <TabsTrigger value="files">
-            <FilePlus className="h-4 w-4 mr-2" />
-            Resources
+          <TabsTrigger value="tasks" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>Tasks</span>
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            <span>Settings</span>
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="videos">
-          <div className="grid md:grid-cols-[2fr_1fr] gap-6">
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Add New Video</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleVideoSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Video Title</Label>
-                    <Input 
-                      id="title"
-                      placeholder="Enter video title"
-                      value={videoForm.title}
-                      onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea 
-                      id="description"
-                      placeholder="Enter video description"
-                      rows={4}
-                      value={videoForm.description}
-                      onChange={(e) => setVideoForm({ ...videoForm, description: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="youtubeId">YouTube Video ID</Label>
-                    <Input 
-                      id="youtubeId"
-                      placeholder="e.g. dQw4w9WgXcQ"
-                      value={videoForm.youtubeId}
-                      onChange={(e) => setVideoForm({ ...videoForm, youtubeId: e.target.value })}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      The ID is the part after ?v= in the YouTube URL
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="category">Category</Label>
-                      <select 
-                        id="category"
-                        className="w-full rounded-md border p-2"
-                        value={videoForm.category}
-                        onChange={(e) => setVideoForm({ ...videoForm, category: e.target.value })}
-                      >
-                        <option value="">Select Category</option>
-                        <option value="HTML">HTML</option>
-                        <option value="CSS">CSS</option>
-                        <option value="JavaScript">JavaScript</option>
-                        <option value="React">React</option>
-                        <option value="Node.js">Node.js</option>
-                        <option value="MongoDB">MongoDB</option>
-                      </select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="language">Language</Label>
-                      <select 
-                        id="language"
-                        className="w-full rounded-md border p-2"
-                        value={videoForm.language}
-                        onChange={(e) => setVideoForm({ ...videoForm, language: e.target.value })}
-                      >
-                        <option value="english">English</option>
-                        <option value="hindi">Hindi</option>
-                        <option value="urdu">Urdu</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="duration">Duration (in seconds)</Label>
-                      <Input 
-                        id="duration"
-                        type="number"
-                        placeholder="e.g. 600 for 10 minutes"
-                        value={videoForm.duration || ""}
-                        onChange={(e) => setVideoForm({ ...videoForm, duration: Number(e.target.value) })}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="tags">Tags (comma separated)</Label>
-                      <Input 
-                        id="tags"
-                        placeholder="e.g. hooks, state, effect"
-                        value={videoForm.tags}
-                        onChange={(e) => setVideoForm({ ...videoForm, tags: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button type="submit">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Video
-                    </Button>
-                  </div>
-                </form>
+                <div className="text-2xl font-bold">2,451</div>
+                <p className="text-xs text-muted-foreground">+12% from last month</p>
               </CardContent>
             </Card>
             
             <Card>
-              <CardHeader>
-                <CardTitle>Bulk Upload</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                  <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="font-medium mb-2">Upload CSV File</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Drag and drop a CSV file or click to browse
-                  </p>
-                  <Input 
-                    type="file" 
-                    accept=".csv" 
-                    className="hidden" 
-                    id="csv-upload" 
-                  />
-                  <label htmlFor="csv-upload">
-                    <Button variant="outline" className="cursor-pointer" asChild>
-                      <span>Browse Files</span>
-                    </Button>
-                  </label>
-                </div>
-                
-                <div className="mt-6">
-                  <h3 className="font-medium mb-2">CSV Template Format</h3>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Your CSV should have the following columns:
-                  </p>
-                  <div className="text-xs font-mono bg-muted p-2 rounded overflow-x-auto">
-                    title,description,youtubeId,category,language,duration,tags
-                  </div>
-                  <Button variant="link" className="p-0 h-auto mt-2 text-xs">
-                    Download template
-                  </Button>
-                </div>
+                <div className="text-2xl font-bold">1,587</div>
+                <p className="text-xs text-muted-foreground">+5% from last month</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Videos Watched</CardTitle>
+                <VideoIcon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">12,458</div>
+                <p className="text-xs text-muted-foreground">+18% from last month</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Tasks Completed</CardTitle>
+                <Check className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">8,745</div>
+                <p className="text-xs text-muted-foreground">+7% from last month</p>
               </CardContent>
             </Card>
           </div>
           
-          <Card className="mt-6">
+          <Card>
             <CardHeader>
-              <CardTitle>Recent Videos</CardTitle>
+              <CardTitle>Recent Activities</CardTitle>
+              <CardDescription>Latest actions on the platform</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border">
-                <div className="grid grid-cols-12 gap-4 p-4 border-b font-medium">
-                  <div className="col-span-5">Title</div>
-                  <div className="col-span-2">Category</div>
-                  <div className="col-span-2">Language</div>
-                  <div className="col-span-1">Duration</div>
-                  <div className="col-span-2 text-right">Actions</div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div>
+                    <p className="text-sm font-medium">New user registered</p>
+                    <p className="text-xs text-muted-foreground">John Smith (john@example.com)</p>
+                  </div>
+                  <div className="ml-auto text-xs text-muted-foreground">10 minutes ago</div>
                 </div>
                 
-                <div className="divide-y">
-                  <div className="grid grid-cols-12 gap-4 p-4 items-center">
-                    <div className="col-span-5">Getting Started with React Hooks</div>
-                    <div className="col-span-2">React</div>
-                    <div className="col-span-2">English</div>
-                    <div className="col-span-1">10:15</div>
-                    <div className="col-span-2 flex justify-end gap-2">
-                      <Button variant="outline" size="sm">Edit</Button>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  <div>
+                    <p className="text-sm font-medium">New video uploaded</p>
+                    <p className="text-xs text-muted-foreground">React Hooks Tutorial (Part 3)</p>
                   </div>
-                  
-                  <div className="grid grid-cols-12 gap-4 p-4 items-center">
-                    <div className="col-span-5">CSS Grid Layout Tutorial</div>
-                    <div className="col-span-2">CSS</div>
-                    <div className="col-span-2">English</div>
-                    <div className="col-span-1">15:30</div>
-                    <div className="col-span-2 flex justify-end gap-2">
-                      <Button variant="outline" size="sm">Edit</Button>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  <div className="ml-auto text-xs text-muted-foreground">1 hour ago</div>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                  <div>
+                    <p className="text-sm font-medium">Premium subscription purchased</p>
+                    <p className="text-xs text-muted-foreground">Sarah Williams (sarah@example.com)</p>
                   </div>
-                  
-                  <div className="grid grid-cols-12 gap-4 p-4 items-center">
-                    <div className="col-span-5">Node.js API Development</div>
-                    <div className="col-span-2">Node.js</div>
-                    <div className="col-span-2">Hindi</div>
-                    <div className="col-span-1">25:40</div>
-                    <div className="col-span-2 flex justify-end gap-2">
-                      <Button variant="outline" size="sm">Edit</Button>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  <div className="ml-auto text-xs text-muted-foreground">3 hours ago</div>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                  <div>
+                    <p className="text-sm font-medium">Error reported</p>
+                    <p className="text-xs text-muted-foreground">Video playback issue on iOS devices</p>
                   </div>
+                  <div className="ml-auto text-xs text-muted-foreground">5 hours ago</div>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                  <div>
+                    <p className="text-sm font-medium">New task created</p>
+                    <p className="text-xs text-muted-foreground">Building a REST API with Node.js</p>
+                  </div>
+                  <div className="ml-auto text-xs text-muted-foreground">1 day ago</div>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="justify-between">
-              <div className="text-sm text-muted-foreground">
-                Showing 3 of 87 videos
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled>Previous</Button>
-                <Button variant="outline" size="sm">Next</Button>
-              </div>
-            </CardFooter>
           </Card>
         </TabsContent>
         
-        <TabsContent value="users">
+        <TabsContent value="users" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>User Management</CardTitle>
+              <CardDescription>View and manage all users on the platform</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border">
-                <div className="grid grid-cols-12 gap-4 p-4 border-b font-medium">
-                  <div className="col-span-3">Name</div>
-                  <div className="col-span-4">Email</div>
-                  <div className="col-span-2">Join Date</div>
-                  <div className="col-span-1">Plan</div>
-                  <div className="col-span-2 text-right">Actions</div>
+              <div className="flex justify-between items-center mb-4">
+                <div className="relative w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search users..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <Button>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add User
+                </Button>
+              </div>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead>Streak</TableHead>
+                    <TableHead>Last Active</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.joinedAt.toLocaleDateString()}</TableCell>
+                      <TableCell>{user.streak} days</TableCell>
+                      <TableCell>{user.lastActive.toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {user.isPremium ? (
+                          <Badge className="bg-brand-purple">Premium</Badge>
+                        ) : (
+                          <Badge variant="outline">Free</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm">Edit</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="content" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Upload New Video</CardTitle>
+              <CardDescription>Add a new video to the learning library</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleVideoUpload} className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Video Title</Label>
+                    <Input id="title" placeholder="Enter video title" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="youtubeId">YouTube Video ID</Label>
+                    <Input id="youtubeId" placeholder="e.g. dQw4w9WgXcQ" />
+                  </div>
                 </div>
                 
-                <div className="divide-y">
-                  {recentUsers.map(user => (
-                    <div key={user.id} className="grid grid-cols-12 gap-4 p-4 items-center">
-                      <div className="col-span-3">{user.name}</div>
-                      <div className="col-span-4">{user.email}</div>
-                      <div className="col-span-2">{user.joinDate}</div>
-                      <div className="col-span-1">
-                        <Badge variant={user.plan === "Premium" ? "default" : "outline"}>
-                          {user.plan}
-                        </Badge>
-                      </div>
-                      <div className="col-span-2 flex justify-end gap-2">
-                        <Button variant="outline" size="sm">Edit</Button>
-                        <Button variant="destructive" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea id="description" placeholder="Enter video description" rows={4} />
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <select id="category" className="w-full border rounded-md p-2">
+                      <option>HTML & CSS</option>
+                      <option>JavaScript</option>
+                      <option>React</option>
+                      <option>Node.js</option>
+                      <option>Database</option>
+                      <option>DevOps</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="language">Language</Label>
+                    <select id="language" className="w-full border rounded-md p-2">
+                      <option>English</option>
+                      <option>Hindi</option>
+                      <option>Urdu</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="difficulty">Difficulty</Label>
+                    <select id="difficulty" className="w-full border rounded-md p-2">
+                      <option>Beginner</option>
+                      <option>Intermediate</option>
+                      <option>Advanced</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Duration (in seconds)</Label>
+                    <Input id="duration" type="number" placeholder="e.g. 600" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="thumbnail">Thumbnail Image</Label>
+                    <div className="flex items-center gap-2">
+                      <Input id="thumbnail" type="file" className="flex-1" />
+                      <Button type="button" variant="outline">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload
+                      </Button>
                     </div>
-                  ))}
+                  </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button type="submit">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add Video
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="tasks" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Task</CardTitle>
+              <CardDescription>Add a new task for users to complete</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleTaskCreate} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="taskTitle">Task Title</Label>
+                  <Input id="taskTitle" placeholder="Enter task title" />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="taskDescription">Description</Label>
+                  <Textarea id="taskDescription" placeholder="Enter task description" rows={4} />
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="taskCategory">Category</Label>
+                    <select id="taskCategory" className="w-full border rounded-md p-2">
+                      <option>HTML & CSS</option>
+                      <option>JavaScript</option>
+                      <option>React</option>
+                      <option>Node.js</option>
+                      <option>Database</option>
+                      <option>DevOps</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="dueDate">Due Date</Label>
+                    <Input id="dueDate" type="date" />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="resources">Learning Resources (YouTube Video IDs, comma separated)</Label>
+                  <Input id="resources" placeholder="e.g. dQw4w9WgXcQ, xvFZjo5PgG0" />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="readingLinks">Reading Materials (URLs, one per line)</Label>
+                  <Textarea id="readingLinks" placeholder="https://example.com/article1&#10;https://example.com/article2" rows={2} />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="exercises">Practice Exercises (one per line)</Label>
+                  <Textarea id="exercises" placeholder="Build a simple React component&#10;Implement a responsive navbar" rows={3} />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="tags">Tags (comma separated)</Label>
+                  <Input id="tags" placeholder="e.g. frontend, react, hooks" />
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button type="submit">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Create Task
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Settings</CardTitle>
+              <CardDescription>Manage global settings for the platform</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="siteTitle">Site Title</Label>
+                  <Input id="siteTitle" defaultValue="CodeForge" />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="description">Site Description</Label>
+                  <Textarea id="description" defaultValue="Your path to becoming a full-stack developer" rows={2} />
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="contactEmail">Contact Email</Label>
+                    <Input id="contactEmail" type="email" defaultValue="contact@codeforge.com" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="supportEmail">Support Email</Label>
+                    <Input id="supportEmail" type="email" defaultValue="support@codeforge.com" />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Featured Section</Label>
+                  <div className="flex items-center space-x-2">
+                    <input type="checkbox" id="enableFeatured" defaultChecked />
+                    <label htmlFor="enableFeatured">Enable Featured Section on Homepage</label>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Maintenance Mode</Label>
+                  <div className="flex items-center space-x-2">
+                    <input type="checkbox" id="maintenanceMode" />
+                    <label htmlFor="maintenanceMode">Enable Maintenance Mode</label>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline">Cancel</Button>
+                  <Button>Save Changes</Button>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="justify-between">
-              <div className="text-sm text-muted-foreground">
-                Showing 4 of {adminStats.totalUsers} users
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled>Previous</Button>
-                <Button variant="outline" size="sm">Next</Button>
-              </div>
-            </CardFooter>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="tasks">
-          <Card>
+          
+          <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20">
             <CardHeader>
-              <CardTitle>Task Management</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                Danger Zone
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-center py-8">
-                Task management interface coming soon.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="files">
-          <Card>
-            <CardHeader>
-              <CardTitle>Resource Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center py-8">
-                Resource management interface coming soon.
-              </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Clear Cache</h4>
+                  <p className="text-sm text-muted-foreground">Removes all cached data from the system. This might temporarily slow down the platform.</p>
+                  <Button variant="outline" className="text-orange-500 border-orange-200">Clear Cache</Button>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-medium">Reset All User Progress</h4>
+                  <p className="text-sm text-muted-foreground">This will reset all users' progress data. This action cannot be undone.</p>
+                  <Button variant="outline" className="text-red-500 border-red-200">Reset Progress</Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

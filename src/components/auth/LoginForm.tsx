@@ -1,22 +1,23 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Github, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn, loading } = useAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
@@ -29,18 +30,11 @@ export function LoginForm() {
       return;
     }
     
-    setLoading(true);
-    
-    // Simulate login
-    setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Success",
-        description: "Login successful! Redirecting to dashboard..."
-      });
-      // In a real app, store user data in context/state management
-      navigate("/");
-    }, 1000);
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      console.error('Error in login form:', error);
+    }
   };
   
   return (
@@ -121,9 +115,11 @@ export function LoginForm() {
       <CardFooter>
         <p className="text-sm text-center w-full text-muted-foreground">
           Don't have an account?{" "}
-          <Button variant="link" className="p-0" onClick={() => navigate("/register")}>
-            Sign up
-          </Button>
+          <Link to="/register">
+            <Button variant="link" className="p-0">
+              Sign up
+            </Button>
+          </Link>
         </p>
       </CardFooter>
     </Card>
