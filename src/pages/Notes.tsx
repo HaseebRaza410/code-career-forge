@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,8 @@ import {
   Save
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { getUserNotes } from "@/services/noteService";
 
 export default function Notes() {
   const [notes, setNotes] = useState<Note[]>(mockNotes);
@@ -27,6 +30,12 @@ export default function Notes() {
   const [editContent, setEditContent] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  useEffect(() => {
+    if (activeNote) {
+      setEditContent(activeNote.content);
+    }
+  }, [activeNote]);
   
   const filteredNotes = notes.filter(note =>
     note.content.toLowerCase().includes(searchQuery.toLowerCase())

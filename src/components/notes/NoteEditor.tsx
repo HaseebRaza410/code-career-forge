@@ -20,7 +20,7 @@ export function NoteEditor({
   autoFocus = false 
 }: NoteEditorProps) {
   const [content, setContent] = useState(initialContent);
-  const [isEditing, setIsEditing] = useState(autoFocus);
+  const [isEditing, setIsEditing] = useState(autoFocus || initialContent === "");
   
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
@@ -57,7 +57,7 @@ export function NoteEditor({
             onChange={handleContentChange}
             placeholder={placeholder}
             rows={5}
-            className="resize-none"
+            className="resize-none h-full min-h-[200px]"
             autoFocus={autoFocus}
             onKeyDown={handleKeyDown}
           />
@@ -83,7 +83,7 @@ export function NoteEditor({
         </>
       ) : (
         <div 
-          className={`border rounded-md p-3 min-h-[100px] cursor-text ${!initialContent ? 'text-muted-foreground text-sm' : 'whitespace-pre-wrap'}`}
+          className={`border rounded-md p-3 min-h-[200px] cursor-text ${!initialContent ? 'text-muted-foreground text-sm' : 'whitespace-pre-wrap'}`}
           onClick={() => setIsEditing(true)}
         >
           {initialContent || placeholder}

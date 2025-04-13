@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { Task, Note } from "@/lib/types";
 import { mockTasks, mockNotes } from "@/lib/mock-data";
+import { useToast } from "@/hooks/use-toast";
 
 export default function TaskDetail() {
   const { id } = useParams();
@@ -21,6 +23,7 @@ export default function TaskDetail() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState("");
   const [status, setStatus] = useState<"not-started" | "in-progress" | "completed">("not-started");
+  const { toast } = useToast();
 
   useEffect(() => {
     const foundTask = mockTasks.find(t => t.id === id);
@@ -48,13 +51,26 @@ export default function TaskDetail() {
     setNotes([...notes, newNoteObj]);
     setNewNote("");
     
-    console.log("Saving note:", newNoteObj);
+    toast({
+      title: "Note Saved",
+      description: "Your note has been added to this task."
+    });
   };
 
   const handleStatusChange = (newStatus: "not-started" | "in-progress" | "completed") => {
     setStatus(newStatus);
     
-    console.log("Updating task status:", newStatus);
+    toast({
+      title: "Status Updated",
+      description: `Task status changed to: ${newStatus.replace('-', ' ')}`
+    });
+  };
+
+  const handleBookmarkVideo = (videoTitle: string) => {
+    toast({
+      title: "Video Bookmarked",
+      description: `"${videoTitle}" has been saved for later.`
+    });
   };
 
   if (!task) {
@@ -121,7 +137,11 @@ export default function TaskDetail() {
                         <div className="mt-2">
                           <div className="flex justify-between items-start">
                             <h3 className="font-medium">{video.title}</h3>
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleBookmarkVideo(video.title)}
+                            >
                               <BookmarkPlus className="h-4 w-4 mr-1" />
                               Save for Later
                             </Button>
