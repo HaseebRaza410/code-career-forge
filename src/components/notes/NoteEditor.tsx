@@ -8,6 +8,7 @@ interface NoteEditorProps {
   initialContent?: string;
   placeholder?: string;
   onSave: (content: string) => void;
+  onChange?: (content: string) => void;
   autoFocus?: boolean;
 }
 
@@ -15,10 +16,19 @@ export function NoteEditor({
   initialContent = "", 
   placeholder = "Add your notes here...", 
   onSave, 
+  onChange,
   autoFocus = false 
 }: NoteEditorProps) {
   const [content, setContent] = useState(initialContent);
   const [isEditing, setIsEditing] = useState(autoFocus);
+  
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setContent(newContent);
+    if (onChange) {
+      onChange(newContent);
+    }
+  };
   
   const handleSave = () => {
     if (content.trim()) {
@@ -44,7 +54,7 @@ export function NoteEditor({
         <>
           <Textarea 
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={handleContentChange}
             placeholder={placeholder}
             rows={5}
             className="resize-none"

@@ -6,8 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Bell, Globe, Moon, Shield, Volume2 } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Settings() {
+  const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+
+  const handleThemeChange = (checked: boolean) => {
+    const newTheme = checked ? "dark" : "light";
+    setTheme(newTheme);
+    toast({
+      title: "Theme Changed",
+      description: `Theme has been set to ${newTheme} mode`
+    });
+  };
+  
   return (
     <div className="container py-6">
       <h1 className="text-3xl font-bold mb-2">Settings</h1>
@@ -29,7 +43,10 @@ export default function Settings() {
                   Switch between light and dark themes
                 </p>
               </div>
-              <Switch />
+              <Switch 
+                checked={theme === "dark"}
+                onCheckedChange={handleThemeChange}
+              />
             </div>
             
             <Separator />
@@ -151,7 +168,12 @@ export default function Settings() {
         </Card>
         
         <div className="flex justify-end">
-          <Button>Save Settings</Button>
+          <Button onClick={() => toast({
+            title: "Settings Saved",
+            description: "Your preferences have been updated successfully."
+          })}>
+            Save Settings
+          </Button>
         </div>
       </div>
     </div>
