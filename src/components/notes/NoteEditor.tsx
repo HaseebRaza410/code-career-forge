@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Save } from "lucide-react";
+import { Save, Edit } from "lucide-react";
 
 interface NoteEditorProps {
   initialContent?: string;
@@ -10,6 +10,7 @@ interface NoteEditorProps {
   onSave: (content: string) => void;
   onChange?: (content: string) => void;
   autoFocus?: boolean;
+  className?: string;
 }
 
 export function NoteEditor({ 
@@ -17,7 +18,8 @@ export function NoteEditor({
   placeholder = "Add your notes here...", 
   onSave, 
   onChange,
-  autoFocus = false 
+  autoFocus = false,
+  className = ""
 }: NoteEditorProps) {
   const [content, setContent] = useState(initialContent);
   const [isEditing, setIsEditing] = useState(autoFocus || initialContent === "");
@@ -49,7 +51,7 @@ export function NoteEditor({
   };
   
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${className}`}>
       {isEditing ? (
         <>
           <Textarea 
@@ -83,20 +85,21 @@ export function NoteEditor({
         </>
       ) : (
         <div 
-          className={`border rounded-md p-3 min-h-[200px] cursor-text ${!initialContent ? 'text-muted-foreground text-sm' : 'whitespace-pre-wrap'}`}
+          className={`border rounded-md p-3 min-h-[200px] cursor-text ${!content ? 'text-muted-foreground text-sm' : 'whitespace-pre-wrap'}`}
           onClick={() => setIsEditing(true)}
         >
-          {initialContent || placeholder}
+          {content || placeholder}
         </div>
       )}
       
-      {!isEditing && initialContent && (
+      {!isEditing && content && (
         <div className="flex justify-end">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => setIsEditing(true)}
           >
+            <Edit className="h-4 w-4 mr-1" />
             Edit
           </Button>
         </div>

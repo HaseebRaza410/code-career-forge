@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase, UserDetails } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { Session, User } from '@supabase/supabase-js';
@@ -10,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   userDetails: UserDetails | null;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string, redirectPath?: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
   isAuthenticated: boolean;
@@ -24,22 +23,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
     const getInitialSession = async () => {
       setLoading(true);
       
-      // Check for existing session
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
       if (currentSession?.user) {
-        // Fetch user details from users table
         await fetchUserDetails(currentSession.user.id);
-        // Update last active timestamp
         await updateLastActive(currentSession.user.id);
       }
       
@@ -48,7 +44,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     getInitialSession();
     
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log(`Auth event: ${event}`);
@@ -120,7 +115,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       
-      // Create the user in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -141,7 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (data?.user) {
-        // Create a record in the users table
         const { error: profileError } = await supabase.from('users').insert([
           {
             id: data.user.id,
@@ -167,7 +160,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: "Your account has been created! Redirecting to dashboard...",
         });
         
-        // Redirect after a short delay
         setTimeout(() => {
           navigate('/dashboard');
         }, 1500);
@@ -184,7 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, redirectPath?: string) => {
     try {
       setLoading(true);
       
@@ -205,12 +197,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data?.user) {
         toast({
           title: "Sign in successful",
-          description: "Welcome back! Redirecting to dashboard...",
+          description: "Welcome back! Redirecting...",
         });
         
-        // Redirect after a short delay
+        const from = 
+          location.state?.from || 
+          redirectPath || 
+          '/dashboard';
+        
         setTimeout(() => {
-          navigate('/dashboard');
+          navigate(from, { replace: true });
         }, 1500);
       }
     } catch (error) {
@@ -245,7 +241,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "You have been successfully signed out.",
       });
       
-      // Redirect to home page
       navigate('/');
     } catch (error) {
       console.error('Error during sign out:', error);
