@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase, UserDetails } from '@/lib/supabase';
@@ -28,33 +29,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const getInitialSession = async () => {
-      setLoading(true);
-      
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      if (currentSession?.user) {
-        await fetchUserDetails(currentSession.user.id);
-        await updateLastActive(currentSession.user.id);
+      try {
+        setLoading(true);
+        
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          setTimeout(() => {
+            fetchUserDetails(currentSession.user.id);
+            updateLastActive(currentSession.user.id);
+          }, 0);
+        }
+      } catch (error) {
+        console.error('Error fetching session:', error);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
     
     getInitialSession();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         console.log(`Auth event: ${event}`);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
         if (event === 'SIGNED_IN' && newSession?.user) {
-          setLoading(true);
-          await fetchUserDetails(newSession.user.id);
-          await updateLastActive(newSession.user.id);
-          setLoading(false);
+          setTimeout(() => {
+            fetchUserDetails(newSession.user.id);
+            updateLastActive(newSession.user.id);
+          }, 0);
         } else if (event === 'SIGNED_OUT') {
           setUserDetails(null);
         }

@@ -30,7 +30,7 @@ export const ProtectedRoute = ({ children, requireAuth = true }: ProtectedRouteP
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto text-brand-purple mb-4" />
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary mb-4" />
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
