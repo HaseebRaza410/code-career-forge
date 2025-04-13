@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "./components/layout/Layout";
@@ -31,41 +32,43 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route path="dashboard" element={<Index />} />
-              <Route path="roadmap" element={<Roadmap />} />
-              <Route path="tasks" element={<Tasks />} />
-              <Route path="tasks/:id" element={<TaskDetail />} />
-              <Route path="portfolio" element={<Portfolio />} />
-              <Route path="community" element={<Community />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="premium" element={<Premium />} />
-              <Route path="learning" element={<Learning />} />
-              <Route path="schedule" element={<Schedule />} />
-              <Route path="notes" element={<Notes />} />
-              <Route path="resources" element={<Resources />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="admin" element={<Admin />} />
-              <Route path="support" element={<Support />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }>
+                <Route path="dashboard" element={<Index />} />
+                <Route path="roadmap" element={<Roadmap />} />
+                <Route path="tasks" element={<Tasks />} />
+                <Route path="tasks/:id" element={<TaskDetail />} />
+                <Route path="portfolio" element={<Portfolio />} />
+                <Route path="community" element={<Community />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="premium" element={<Premium />} />
+                <Route path="learning" element={<Learning />} />
+                <Route path="schedule" element={<Schedule />} />
+                <Route path="notes" element={<Notes />} />
+                <Route path="resources" element={<Resources />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="admin" element={<Admin />} />
+                <Route path="support" element={<Support />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

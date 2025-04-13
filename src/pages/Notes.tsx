@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -271,13 +270,12 @@ export default function Notes() {
                 {editMode ? (
                   <div className="h-full">
                     <NoteEditor
-                      content={editContent}
+                      initialContent={editContent}
                       onChange={setEditContent}
                     />
                   </div>
                 ) : (
                   <div className="prose prose-sm dark:prose-invert max-w-none h-full overflow-y-auto">
-                    {/* This would be a markdown renderer in a real app */}
                     <pre className="whitespace-pre-wrap">
                       {activeNote.content}
                     </pre>
